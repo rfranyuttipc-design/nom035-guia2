@@ -43,6 +43,27 @@ if not st.session_state.app_loaded_g2:
     st.session_state.app_loaded_g2 = True
 
 # ── Clientes ──────────────────────────────────────────────────────────────────
+# Resolución de rutas — busca el logo en múltiples ubicaciones posibles
+_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+def _asset(rel):
+    """Busca el archivo en todas las rutas posibles."""
+    nombre = os.path.basename(rel)
+    candidatos = [
+        os.path.join(_BASE_DIR, rel),                        # assets/logos/fruco.png
+        os.path.join(_BASE_DIR, nombre),                     # fruco.png (raíz)
+        os.path.join(_BASE_DIR, "assets", "logos", nombre),  # assets/logos/fruco.png
+        os.path.join(_BASE_DIR, "assets", nombre),           # assets/fruco.png
+        os.path.join(os.getcwd(), rel),                      # cwd/assets/logos/fruco.png
+        os.path.join(os.getcwd(), nombre),                   # cwd/fruco.png
+        os.path.join(os.getcwd(), "assets", "logos", nombre),
+        rel,                                                  # ruta tal cual
+    ]
+    for c in candidatos:
+        if c and os.path.exists(c):
+            return c
+    return os.path.join(_BASE_DIR, rel)  # devuelve aunque no exista
+
 CLIENTES = {
     "FRUCO": {
         "razon": "FRUTAS CONCENTRADAS, S.A.P.I. DE C.V.",
@@ -63,9 +84,6 @@ CLIENTES = {
         "opciones": ["CENTRO DEPORTIVO ALFREDO HARP HELÚ, S.A. DE C.V."],
     },
 }
-# Resolución de rutas robusta para Streamlit Cloud
-_BASE_DIR = os.path.dirname(os.path.abspath(__file__)) if "__file__" in dir() else os.getcwd()
-def _asset(rel): return os.path.join(_BASE_DIR, rel)
 LOGO_RF = _asset("assets/logos/rfranyutti.gif")
 
 def excel_path(cliente_key: str, razon_social: str = "") -> str:
@@ -106,168 +124,215 @@ ESCALA = {"Siempre": 4, "Casi siempre": 3, "Algunas veces": 2,
 # Dominios: 1=Carga, 2=Control, 3=Jornada, 4=Interf, 5=Liderazgo, 6=Relaciones, 7=Violencia
 
 PREGUNTAS_G2 = [
-    # CATEGORÍA 1 — Ambiente de trabajo / Condiciones en el ambiente
-    {"id":1,  "cat":1, "dom":0, "cat_nombre":"Ambiente de trabajo",
+    # ── SECCIÓN 1: Ambiente de trabajo (ítems 1-3) ────────────────────────────
+    {"id":1,  "cat":1, "dom":0, "sec":"Condiciones de trabajo y ritmo",
+     "cat_nombre":"Ambiente de trabajo",
      "dom_nombre":"Condiciones en el ambiente de trabajo",
      "texto":"Mi trabajo me exige hacer mucho esfuerzo físico."},
-    {"id":2,  "cat":1, "dom":0, "cat_nombre":"Ambiente de trabajo",
+    {"id":2,  "cat":1, "dom":0, "sec":"Condiciones de trabajo y ritmo",
+     "cat_nombre":"Ambiente de trabajo",
      "dom_nombre":"Condiciones en el ambiente de trabajo",
      "texto":"Me preocupa sufrir un accidente en mi trabajo."},
-    {"id":3,  "cat":1, "dom":0, "cat_nombre":"Ambiente de trabajo",
+    {"id":3,  "cat":1, "dom":0, "sec":"Condiciones de trabajo y ritmo",
+     "cat_nombre":"Ambiente de trabajo",
      "dom_nombre":"Condiciones en el ambiente de trabajo",
      "texto":"Considero que las actividades que realizo son peligrosas."},
 
-    # CATEGORÍA 2 — Factores propios de la actividad / Carga de trabajo
-    {"id":4,  "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
+    # ── SECCIÓN 1 cont.: Carga de trabajo (ítems 4-9) ────────────────────────
+    {"id":4,  "cat":2, "dom":1, "sec":"Condiciones de trabajo y ritmo",
+     "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Carga de trabajo",
      "texto":"Por la cantidad de trabajo que tengo debo quedarme tiempo adicional a mi turno."},
-    {"id":5,  "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
+    {"id":5,  "cat":2, "dom":1, "sec":"Condiciones de trabajo y ritmo",
+     "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Carga de trabajo",
      "texto":"Por la cantidad de trabajo que tengo debo trabajar sin parar."},
-    {"id":6,  "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
+    {"id":6,  "cat":2, "dom":1, "sec":"Condiciones de trabajo y ritmo",
+     "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Carga de trabajo",
      "texto":"Considero que es necesario mantener un ritmo de trabajo acelerado."},
-    {"id":7,  "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
+    {"id":7,  "cat":2, "dom":1, "sec":"Condiciones de trabajo y ritmo",
+     "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Carga de trabajo",
      "texto":"Mi trabajo exige que esté muy concentrado."},
-    {"id":8,  "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
+    {"id":8,  "cat":2, "dom":1, "sec":"Condiciones de trabajo y ritmo",
+     "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Carga de trabajo",
      "texto":"Mi trabajo requiere que memorice mucha información."},
-    {"id":9,  "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
+    {"id":9,  "cat":2, "dom":1, "sec":"Condiciones de trabajo y ritmo",
+     "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Carga de trabajo",
      "texto":"Mi trabajo exige que atienda varios asuntos al mismo tiempo."},
-    {"id":10, "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
+
+    # ── SECCIÓN 2: Actividades y responsabilidades (ítems 10-13) ─────────────
+    {"id":10, "cat":2, "dom":1, "sec":"Actividades y responsabilidades",
+     "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Carga de trabajo",
      "texto":"En mi trabajo soy responsable de cosas de mucho valor."},
-    {"id":11, "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
+    {"id":11, "cat":2, "dom":1, "sec":"Actividades y responsabilidades",
+     "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Carga de trabajo",
      "texto":"Respondo ante mi jefe por los resultados de toda mi área de trabajo."},
-    {"id":12, "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
+    {"id":12, "cat":2, "dom":1, "sec":"Actividades y responsabilidades",
+     "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Carga de trabajo",
      "texto":"En mi trabajo me dan órdenes contradictorias."},
-    {"id":13, "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
+    {"id":13, "cat":2, "dom":1, "sec":"Actividades y responsabilidades",
+     "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Carga de trabajo",
      "texto":"Considero que en mi trabajo me piden hacer cosas innecesarias."},
 
-    # CATEGORÍA 3 — Organización del tiempo de trabajo / Jornada
-    {"id":14, "cat":3, "dom":3, "cat_nombre":"Organización del tiempo de trabajo",
+    # ── SECCIÓN 3: Tiempo y responsabilidades familiares (ítems 14-17) ────────
+    {"id":14, "cat":3, "dom":3, "sec":"Tiempo de trabajo y familia",
+     "cat_nombre":"Organización del tiempo de trabajo",
      "dom_nombre":"Jornada de trabajo",
      "texto":"Trabajo horas extras más de tres veces a la semana."},
-    {"id":15, "cat":3, "dom":3, "cat_nombre":"Organización del tiempo de trabajo",
+    {"id":15, "cat":3, "dom":3, "sec":"Tiempo de trabajo y familia",
+     "cat_nombre":"Organización del tiempo de trabajo",
      "dom_nombre":"Jornada de trabajo",
      "texto":"Mi trabajo me exige laborar en días de descanso, festivos o fines de semana."},
-
-    # Interferencia trabajo-familia
-    {"id":16, "cat":3, "dom":4, "cat_nombre":"Organización del tiempo de trabajo",
+    {"id":16, "cat":3, "dom":4, "sec":"Tiempo de trabajo y familia",
+     "cat_nombre":"Organización del tiempo de trabajo",
      "dom_nombre":"Interferencia en la relación trabajo-familia",
      "texto":"Considero que el tiempo en el trabajo es mucho y perjudica mis actividades familiares o personales."},
-    {"id":17, "cat":3, "dom":4, "cat_nombre":"Organización del tiempo de trabajo",
+    {"id":17, "cat":3, "dom":4, "sec":"Tiempo de trabajo y familia",
+     "cat_nombre":"Organización del tiempo de trabajo",
      "dom_nombre":"Interferencia en la relación trabajo-familia",
      "texto":"Pienso en las actividades familiares o personales cuando estoy en mi trabajo."},
 
-    # CATEGORÍA 2 — Falta de control sobre el trabajo (ítems 18-27, INVERSOS)
-    {"id":18, "cat":2, "dom":2, "cat_nombre":"Factores propios de la actividad",
+    # ── SECCIÓN 4: Decisiones en el trabajo (ítems 18-22) — INVERSOS ─────────
+    {"id":18, "cat":2, "dom":2, "sec":"Decisiones en el trabajo",
+     "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Falta de control sobre el trabajo",
      "texto":"Mi trabajo permite que desarrolle nuevas habilidades."},
-    {"id":19, "cat":2, "dom":2, "cat_nombre":"Factores propios de la actividad",
+    {"id":19, "cat":2, "dom":2, "sec":"Decisiones en el trabajo",
+     "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Falta de control sobre el trabajo",
      "texto":"En mi trabajo puedo aspirar a un mejor puesto."},
-    {"id":20, "cat":2, "dom":2, "cat_nombre":"Factores propios de la actividad",
+    {"id":20, "cat":2, "dom":2, "sec":"Decisiones en el trabajo",
+     "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Falta de control sobre el trabajo",
      "texto":"Durante mi jornada de trabajo puedo tomar pausas cuando las necesito."},
-    {"id":21, "cat":2, "dom":2, "cat_nombre":"Factores propios de la actividad",
+    {"id":21, "cat":2, "dom":2, "sec":"Decisiones en el trabajo",
+     "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Falta de control sobre el trabajo",
      "texto":"Puedo decidir la velocidad a la que realizo mis actividades en mi trabajo."},
-    {"id":22, "cat":2, "dom":2, "cat_nombre":"Factores propios de la actividad",
+    {"id":22, "cat":2, "dom":2, "sec":"Decisiones en el trabajo",
+     "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Falta de control sobre el trabajo",
      "texto":"Puedo cambiar el orden de las actividades que realizo en mi trabajo."},
-    {"id":23, "cat":4, "dom":5, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+
+    # ── SECCIÓN 5: Capacitación e información (ítems 23-27) — INVERSOS ───────
+    {"id":23, "cat":4, "dom":5, "sec":"Capacitación e información",
+     "cat_nombre":"Liderazgo y relaciones en el trabajo",
      "dom_nombre":"Liderazgo",
      "texto":"Me informan con claridad cuáles son mis funciones."},
-    {"id":24, "cat":4, "dom":5, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+    {"id":24, "cat":4, "dom":5, "sec":"Capacitación e información",
+     "cat_nombre":"Liderazgo y relaciones en el trabajo",
      "dom_nombre":"Liderazgo",
      "texto":"Me explican claramente los resultados que debo obtener en mi trabajo."},
-    {"id":25, "cat":4, "dom":5, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+    {"id":25, "cat":4, "dom":5, "sec":"Capacitación e información",
+     "cat_nombre":"Liderazgo y relaciones en el trabajo",
      "dom_nombre":"Liderazgo",
      "texto":"Me informan con quién puedo resolver problemas o asuntos de trabajo."},
-    {"id":26, "cat":2, "dom":2, "cat_nombre":"Factores propios de la actividad",
+    {"id":26, "cat":2, "dom":2, "sec":"Capacitación e información",
+     "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Falta de control sobre el trabajo",
      "texto":"Me permiten asistir a capacitaciones relacionadas con mi trabajo."},
-    {"id":27, "cat":2, "dom":2, "cat_nombre":"Factores propios de la actividad",
+    {"id":27, "cat":2, "dom":2, "sec":"Capacitación e información",
+     "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Falta de control sobre el trabajo",
      "texto":"Recibo capacitación útil para hacer mi trabajo."},
 
-    # CATEGORÍA 4 — Liderazgo y relaciones / Relaciones en el trabajo (INVERSOS)
-    {"id":28, "cat":4, "dom":5, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+    # ── SECCIÓN 6: Relaciones con compañeros y jefe (ítems 28-40) ────────────
+    {"id":28, "cat":4, "dom":5, "sec":"Relaciones con compañeros y jefe",
+     "cat_nombre":"Liderazgo y relaciones en el trabajo",
      "dom_nombre":"Liderazgo",
      "texto":"Mi jefe tiene en cuenta mis puntos de vista y opiniones."},
-    {"id":29, "cat":4, "dom":5, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+    {"id":29, "cat":4, "dom":5, "sec":"Relaciones con compañeros y jefe",
+     "cat_nombre":"Liderazgo y relaciones en el trabajo",
      "dom_nombre":"Liderazgo",
      "texto":"Mi jefe ayuda a solucionar los problemas que se presentan en el trabajo."},
-    {"id":30, "cat":4, "dom":6, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+    {"id":30, "cat":4, "dom":6, "sec":"Relaciones con compañeros y jefe",
+     "cat_nombre":"Liderazgo y relaciones en el trabajo",
      "dom_nombre":"Relaciones en el trabajo",
      "texto":"Puedo confiar en mis compañeros de trabajo."},
-    {"id":31, "cat":4, "dom":6, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+    {"id":31, "cat":4, "dom":6, "sec":"Relaciones con compañeros y jefe",
+     "cat_nombre":"Liderazgo y relaciones en el trabajo",
      "dom_nombre":"Relaciones en el trabajo",
      "texto":"Cuando tenemos que realizar trabajo de equipo los compañeros colaboran."},
-    {"id":32, "cat":4, "dom":6, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+    {"id":32, "cat":4, "dom":6, "sec":"Relaciones con compañeros y jefe",
+     "cat_nombre":"Liderazgo y relaciones en el trabajo",
      "dom_nombre":"Relaciones en el trabajo",
      "texto":"Mis compañeros de trabajo me ayudan cuando tengo dificultades."},
-    {"id":33, "cat":4, "dom":7, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+    {"id":33, "cat":4, "dom":7, "sec":"Relaciones con compañeros y jefe",
+     "cat_nombre":"Liderazgo y relaciones en el trabajo",
      "dom_nombre":"Violencia laboral",
      "texto":"En mi trabajo puedo expresarme libremente sin interrupciones."},
-
-    # Violencia laboral (DIRECTOS)
-    {"id":34, "cat":4, "dom":7, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+    {"id":34, "cat":4, "dom":7, "sec":"Relaciones con compañeros y jefe",
+     "cat_nombre":"Liderazgo y relaciones en el trabajo",
      "dom_nombre":"Violencia laboral",
      "texto":"Recibo críticas constantes a mi persona y/o trabajo."},
-    {"id":35, "cat":4, "dom":7, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+    {"id":35, "cat":4, "dom":7, "sec":"Relaciones con compañeros y jefe",
+     "cat_nombre":"Liderazgo y relaciones en el trabajo",
      "dom_nombre":"Violencia laboral",
      "texto":"Recibo burlas, calumnias, difamaciones, humillaciones o ridiculizaciones."},
-    {"id":36, "cat":4, "dom":7, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+    {"id":36, "cat":4, "dom":7, "sec":"Relaciones con compañeros y jefe",
+     "cat_nombre":"Liderazgo y relaciones en el trabajo",
      "dom_nombre":"Violencia laboral",
      "texto":"Se ignora mi presencia o se me excluye de las reuniones de trabajo y en la toma de decisiones."},
-    {"id":37, "cat":4, "dom":7, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+    {"id":37, "cat":4, "dom":7, "sec":"Relaciones con compañeros y jefe",
+     "cat_nombre":"Liderazgo y relaciones en el trabajo",
      "dom_nombre":"Violencia laboral",
      "texto":"Se manipulan las situaciones de trabajo para hacerme parecer un mal trabajador."},
-    {"id":38, "cat":4, "dom":7, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+    {"id":38, "cat":4, "dom":7, "sec":"Relaciones con compañeros y jefe",
+     "cat_nombre":"Liderazgo y relaciones en el trabajo",
      "dom_nombre":"Violencia laboral",
      "texto":"Se ignoran mis éxitos laborales y se atribuyen a otros trabajadores."},
-    {"id":39, "cat":4, "dom":7, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+    {"id":39, "cat":4, "dom":7, "sec":"Relaciones con compañeros y jefe",
+     "cat_nombre":"Liderazgo y relaciones en el trabajo",
      "dom_nombre":"Violencia laboral",
      "texto":"Me bloquean o impiden las oportunidades que tengo para obtener ascenso o mejora en mi trabajo."},
-    {"id":40, "cat":4, "dom":7, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+    {"id":40, "cat":4, "dom":7, "sec":"Relaciones con compañeros y jefe",
+     "cat_nombre":"Liderazgo y relaciones en el trabajo",
      "dom_nombre":"Violencia laboral",
      "texto":"He presenciado actos de violencia en mi centro de trabajo."},
 
-    # Atención a clientes (DIRECTOS — sección condicional)
-    {"id":41, "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
+    # ── SECCIÓN 7: Atención a clientes (ítems 41-43) — CONDICIONAL ───────────
+    {"id":41, "cat":2, "dom":1, "sec":"Atención a clientes",
+     "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Carga de trabajo",
      "texto":"Atiendo clientes o usuarios muy enojados."},
-    {"id":42, "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
+    {"id":42, "cat":2, "dom":1, "sec":"Atención a clientes",
+     "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Carga de trabajo",
      "texto":"Mi trabajo me exige atender personas muy necesitadas de ayuda o enfermas."},
-    {"id":43, "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
+    {"id":43, "cat":2, "dom":1, "sec":"Atención a clientes",
+     "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Carga de trabajo",
      "texto":"Para hacer mi trabajo debo demostrar sentimientos distintos a los míos."},
 
-    # Supervisores — aplica solo a jefes (DIRECTOS)
-    {"id":44, "cat":4, "dom":6, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+    # ── SECCIÓN 8: Supervisión de trabajadores (ítems 44-46) — CONDICIONAL ───
+    {"id":44, "cat":4, "dom":6, "sec":"Supervisión de trabajadores",
+     "cat_nombre":"Liderazgo y relaciones en el trabajo",
      "dom_nombre":"Relaciones en el trabajo",
-     "texto":"Comunican tarde los asuntos de trabajo (los trabajadores que supervisa)."},
-    {"id":45, "cat":4, "dom":6, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+     "texto":"Comunican tarde los asuntos de trabajo."},
+    {"id":45, "cat":4, "dom":6, "sec":"Supervisión de trabajadores",
+     "cat_nombre":"Liderazgo y relaciones en el trabajo",
      "dom_nombre":"Relaciones en el trabajo",
-     "texto":"Dificultan el logro de los resultados del trabajo (los trabajadores que supervisa)."},
-    {"id":46, "cat":4, "dom":6, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+     "texto":"Dificultan el logro de los resultados del trabajo."},
+    {"id":46, "cat":4, "dom":6, "sec":"Supervisión de trabajadores",
+     "cat_nombre":"Liderazgo y relaciones en el trabajo",
      "dom_nombre":"Relaciones en el trabajo",
-     "texto":"Ignoran las sugerencias para mejorar su trabajo (los trabajadores que supervisa)."},
+     "texto":"Ignoran las sugerencias para mejorar su trabajo."},
 ]
 
 # ── Ítems de calificación INVERTIDA (respuesta favorable = Siempre → menor riesgo)
 # Estos ítems se puntúan al revés: Siempre=0, Casi siempre=1... Nunca=4
-# Tabla 2 NOM-035: ítems con calificación inversa (Siempre=0 ... Nunca=4)
+# Tabla 2 NOM-035 — EXACTA del documento oficial:
+# Ítems 18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33 → Siempre=0, Casi siempre=1, Algunas veces=2, Casi nunca=3, Nunca=4
+# Todos los demás (1-17, 34-46) → Siempre=4, Casi siempre=3, Algunas veces=2, Casi nunca=1, Nunca=0
 ITEMS_INVERSOS = {18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33}
-# Todos los demás son directos (Siempre=4 ... Nunca=0)
 ITEMS_DIRECTOS = set(range(1,47)) - ITEMS_INVERSOS
 
 ESCALA_DIRECTA  = {"Siempre":4,"Casi siempre":3,"Algunas veces":2,"Casi nunca":1,"Nunca":0}
@@ -1158,10 +1223,44 @@ elif S.pantalla == "preguntas":
         unsafe_allow_html=True)
     st.progress(idx / max(len(preg_activas), 1))
 
+    # Instrucción de sección según el documento oficial
+    instrucciones_sec = {
+        "Condiciones de trabajo y ritmo":
+            "Para responder las preguntas siguientes considere las condiciones de su centro de trabajo, así como la cantidad y ritmo de trabajo.",
+        "Actividades y responsabilidades":
+            "Las preguntas siguientes están relacionadas con las actividades que realiza en su trabajo y las responsabilidades que tiene.",
+        "Tiempo de trabajo y familia":
+            "Las preguntas siguientes están relacionadas con el tiempo destinado a su trabajo y sus responsabilidades familiares.",
+        "Decisiones en el trabajo":
+            "Las preguntas siguientes están relacionadas con las decisiones que puede tomar en su trabajo.",
+        "Capacitación e información":
+            "Las preguntas siguientes están relacionadas con la capacitación e información que recibe sobre su trabajo.",
+        "Relaciones con compañeros y jefe":
+            "Las preguntas siguientes se refieren a las relaciones con sus compañeros de trabajo y su jefe.",
+        "Atención a clientes":
+            "Las preguntas siguientes están relacionadas con la atención a clientes y usuarios.",
+        "Supervisión de trabajadores":
+            "Las siguientes preguntas están relacionadas con las actitudes de los trabajadores que supervisa.",
+    }
+    sec_actual = preg.get("sec", "")
+    inst_txt   = instrucciones_sec.get(sec_actual, "")
+
+    # Mostrar instrucción solo cuando cambia la sección
+    sec_anterior = preg_activas[idx-1].get("sec","") if idx > 0 else ""
+    mostrar_inst = (sec_actual != sec_anterior) and bool(inst_txt)
+
+    if mostrar_inst:
+        st.markdown(f"""
+        <div style="background:#f0f6f0;border-left:4px solid #4b694e;border-radius:0 8px 8px 0;
+                    padding:.8rem 1.2rem;margin-bottom:.8rem;font-size:.92rem;
+                    color:#3a5a3e;font-style:italic;line-height:1.6;">
+            {inst_txt}
+        </div>
+        """, unsafe_allow_html=True)
+
     st.markdown(f"""
     <div class="pq-card">
       <div class="pq-num">Pregunta {idx + 1} / {len(preg_activas)}</div>
-      <div class="pq-sec">{preg["cat_nombre"]}</div>
       <div class="pq-dom">Dominio: {preg["dom_nombre"]}</div>
       <div class="pq-txt">{preg["texto"]}</div>
     </div>
