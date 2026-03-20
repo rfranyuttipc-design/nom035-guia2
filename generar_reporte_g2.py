@@ -27,6 +27,11 @@ from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 
+# ── Escalas de calificación NOM-035 Guía II (Tabla 2) ─────────────────────────
+ESCALA_D = {"Siempre":4,"Casi siempre":3,"Algunas veces":2,"Casi nunca":1,"Nunca":0}
+ESCALA_I = {"Siempre":0,"Casi siempre":1,"Algunas veces":2,"Casi nunca":3,"Nunca":4}
+ITEMS_INV_G2 = {18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33}
+
 # ── Paleta ────────────────────────────────────────────────────────────────────
 VERDE       = "4B694E"
 VERDE_CLARO = "D6E4D8"
@@ -219,6 +224,8 @@ def _graf_radar_dominios(df):
 
 def _graf_violencia(df):
     """Gráfica violencia laboral — ítems 33-40 NOM-035 Guía II (Tabla 3)."""
+    escala_d = {"Siempre":4,"Casi siempre":3,"Algunas veces":2,"Casi nunca":1,"Nunca":0}
+    escala_i = {"Siempre":0,"Casi siempre":1,"Algunas veces":2,"Casi nunca":3,"Nunca":4}
     cols_v  = ["P33","P34","P35","P36","P37","P38","P39","P40"]
     present = [c for c in cols_v if c in df.columns]
     if not present:
