@@ -677,19 +677,18 @@ hr.div{border:none;border-top:1.5px solid var(--br);margin:.8rem 0;}
 _cliente_def  = _CLIENTE_URL if (_MODO_EMPLEADO and _CLIENTE_URL in CLIENTES) else "FRUCO"
 _pantalla_def = "bienvenida" if _MODO_EMPLEADO else "panel"
 
-# ── Modo empleado: resetear sesión si viene desde link ?cliente= ──────────────
-# Usamos una clave de control para saber si ya se inicializó esta sesión
-# con el cliente correcto. Si no, forzamos pantalla=bienvenida.
+# ── Modo empleado: forzar bienvenida al entrar con ?cliente= ─────────────────
 if _MODO_EMPLEADO:
     _session_cliente = st.session_state.get("_session_cliente_key", "")
+    _pantalla_actual = st.session_state.get("pantalla", "")
     if _session_cliente != _CLIENTE_URL:
-        # Nueva sesión de empleado o cliente diferente — resetear todo
-        for _k in list(st.session_state.keys()):
-            del st.session_state[_k]
+        # Primera vez que entra con este cliente — solo inicializar pantalla
+        # NO borrar todo, para no interrumpir cuestionarios en progreso
         st.session_state["_session_cliente_key"] = _CLIENTE_URL
-        st.session_state["pantalla"]    = "bienvenida"
-        st.session_state["cliente_key"] = _cliente_def
-        st.session_state["razon"]       = CLIENTES[_cliente_def]["opciones"][0]
+        if _pantalla_actual in ["panel", "", None]:
+            st.session_state["pantalla"]    = "bienvenida"
+            st.session_state["cliente_key"] = _cliente_def
+            st.session_state["razon"]       = CLIENTES[_cliente_def]["opciones"][0]
 
 DEF = dict(
     pantalla=_pantalla_def, cliente_key=_cliente_def,
