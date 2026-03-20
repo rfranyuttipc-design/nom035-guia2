@@ -297,7 +297,8 @@ def _graf_por_area(df):
     return _buf(fig)
 
 def _graf_carga_trabajo(df):
-    """Análisis detallado ítems 5-16 carga de trabajo."""
+    """Análisis detallado ítems carga de trabajo."""
+    escala_d = {"Siempre":4,"Casi siempre":3,"Algunas veces":2,"Casi nunca":1,"Nunca":0}
     items_carga = {
         "P04":"Tiempo extra",
         "P05":"Trabajar sin parar",
@@ -346,7 +347,9 @@ def _calcular_analiticas_g2(df: pd.DataFrame) -> dict:
     if total == 0:
         return {}
 
-    escala = {"Siempre":4,"Casi siempre":3,"Algunas veces":2,"Casi nunca":1,"Nunca":0}
+    escala_d = {"Siempre":4,"Casi siempre":3,"Algunas veces":2,"Casi nunca":1,"Nunca":0}
+    escala_i = {"Siempre":0,"Casi siempre":1,"Algunas veces":2,"Casi nunca":3,"Nunca":4}
+    escala   = escala_d
 
     # 1. Distribución por nivel de riesgo
     dist_riesgo = {}
