@@ -218,39 +218,48 @@ def _graf_radar_dominios(df):
     return _buf(fig)
 
 def _graf_violencia(df):
-    """Gráfica específica de violencia laboral."""
-    cols_v = ["P44","P45","P46"]
+    """Gráfica violencia laboral — ítems 33-40 NOM-035 Guía II (Tabla 3)."""
+    cols_v  = ["P33","P34","P35","P36","P37","P38","P39","P40"]
     present = [c for c in cols_v if c in df.columns]
     if not present:
         return None
-    labels_v = [
-        "Me ignoran o excluyen (P44)",
-        "Burlas, humillaciones (P45)",
-        "Responsabilidades sin\nautoridad (P46)",
-    ]
-    escala = {"Siempre":4,"Casi siempre":3,"Algunas veces":2,"Casi nunca":1,"Nunca":0}
-    promedios = []
+    labels = {
+        "P33":"Sin expresión libre (inv.)",
+        "P34":"Críticas constantes",
+        "P35":"Burlas, humillaciones",
+        "P36":"Me excluyen",
+        "P37":"Me hacen quedar mal",
+        "P38":"Ignoran mis logros",
+        "P39":"Bloquean ascensos",
+        "P40":"Presencié violencia",
+    }
+    escala_d = {"Siempre":4,"Casi siempre":3,"Algunas veces":2,"Casi nunca":1,"Nunca":0}
+    escala_i = {"Siempre":0,"Casi siempre":1,"Algunas veces":2,"Casi nunca":3,"Nunca":4}
+    etiquetas, promedios = [], []
     for col in present:
-        vals = df[col].map(escala).fillna(0)
+        esc = escala_i if col == "P33" else escala_d
+        vals = df[col].map(esc).fillna(0)
         promedios.append(vals.mean())
-
-    fig, ax = plt.subplots(figsize=(6, 3.5))
-    bars = ax.barh(labels_v[:len(present)][::-1], promedios[::-1],
-                   color=[C_MUY_ALTO if p > 1 else C_ALTO if p > 0.5 else C_NULO
-                          for p in promedios[::-1]],
-                   edgecolor="white", height=0.5)
+        etiquetas.append(labels.get(col, col))
+    fig, ax = plt.subplots(figsize=(7, 4.5))
+    bars = ax.barh(etiquetas[::-1], promedios[::-1],
+                   color=[C_MUY_ALTO if p > 2 else C_ALTO if p > 1 else
+                          C_MEDIO if p > 0.5 else C_NULO for p in promedios[::-1]],
+                   edgecolor="white", height=0.55)
     for bar, val in zip(bars, promedios[::-1]):
-        ax.text(bar.get_width() + 0.02, bar.get_y() + bar.get_height()/2,
-                f"{val:.2f}/4.0", va="center", fontsize=8)
-    ax.set_xlim(0, 4.5)
-    ax.set_xlabel("Puntaje promedio (0=Nunca, 4=Siempre)", fontsize=9)
-    ax.set_title("🚨 Análisis de Violencia Laboral (ítems 44-46)",
+        ax.text(bar.get_width()+0.05, bar.get_y()+bar.get_height()/2,
+                f"{val:.2f}/4", va="center", fontsize=8)
+    ax.set_xlim(0, 4.8)
+    ax.set_xlabel("Puntaje promedio de riesgo (0=Sin riesgo, 4=Máximo)", fontsize=9)
+    ax.set_title("Análisis de Violencia Laboral — ítems 33-40 (NOM-035 Guía II)",
                  fontsize=10, fontweight="bold", pad=8)
     ax.spines[["top","right"]].set_visible(False)
-    ax.axvline(x=1, color="orange", linestyle="--", alpha=0.5, label="Umbral alerta")
+    ax.axvline(x=1, color="orange", linestyle="--", alpha=0.5, linewidth=1, label="Umbral atención")
+    ax.axvline(x=2, color="red",    linestyle="--", alpha=0.4, linewidth=1, label="Umbral urgente")
     ax.legend(fontsize=8)
     fig.tight_layout()
     return _buf(fig)
+
 
 def _graf_por_area(df):
     """Riesgo promedio por área."""
@@ -283,18 +292,16 @@ def _graf_por_area(df):
 def _graf_carga_trabajo(df):
     """Análisis detallado ítems 5-16 carga de trabajo."""
     items_carga = {
-        "P05":"Horas extra",
-        "P06":"Trabajo en casa",
-        "P07":"Multitarea",
-        "P08":"Esfuerzo mental",
-        "P09":"Alta concentración",
-        "P10":"Atención elevada",
-        "P11":"Resp. cosas valiosas",
-        "P12":"Resp. seguridad",
-        "P13":"Órdenes contradictorias",
-        "P14":"Reacciones emocionales",
-        "P15":"Desarrollo habilidades",
-        "P16":"Aplica conocimientos",
+        "P04":"Tiempo extra",
+        "P05":"Trabajar sin parar",
+        "P06":"Ritmo acelerado",
+        "P07":"Alta concentración",
+        "P08":"Memoriza mucha info",
+        "P09":"Varios asuntos a la vez",
+        "P10":"Resp. cosas valiosas",
+        "P11":"Resp. área completa",
+        "P12":"Órdenes contradictorias",
+        "P13":"Cosas innecesarias",
     }
     escala = {"Siempre":4,"Casi siempre":3,"Algunas veces":2,"Casi nunca":1,"Nunca":0}
     promedios = {}
@@ -379,14 +386,15 @@ def _calcular_analiticas_g2(df: pd.DataFrame) -> dict:
         dom_critico_niv = ""
 
     # 3. Violencia laboral (ítems 44-46)
-    cols_viol = ["P44","P45","P46"]
+    cols_viol = ["P34","P35","P36","P37","P38","P39","P40"]
     n_viol    = 0
     viol_prom = {}
     for col in cols_viol:
         if col in df.columns:
-            vals = df[col].map(escala).fillna(0)
+            esc  = escala_i if col == "P33" else escala_d
+            vals = df[col].map(esc).fillna(0)
             viol_prom[col] = round(vals.mean(), 2)
-            n_viol += (vals > 0).sum()  # al menos 1 punto = algún nivel
+            n_viol += (vals > 0).sum()
     alertas_violencia = int((df.get("Alerta Violencia","No") == "SÍ — URGENTE").sum()) \
                         if "Alerta Violencia" in df.columns else 0
 
@@ -476,6 +484,14 @@ def _calcular_analiticas_g2(df: pd.DataFrame) -> dict:
 # ══════════════════════════════════════════════════════════════════════════════
 # EXCEL MEJORADO GUÍA II
 # ══════════════════════════════════════════════════════════════════════════════
+def _resolve_logo(logo_path: str) -> str:
+    """Resolves logo path — tries absolute, then relative to this file."""
+    if logo_path and os.path.exists(logo_path):
+        return logo_path
+    base = os.path.dirname(os.path.abspath(__file__)) if "__file__" in dir() else os.getcwd()
+    alt  = os.path.join(base, logo_path) if logo_path else ""
+    return alt if os.path.exists(alt) else ""
+
 def generar_excel_g2(excel_path: str, cliente: str, razon: str) -> str:
     if not os.path.exists(excel_path):
         return None
@@ -625,9 +641,13 @@ def generar_excel_g2(excel_path: str, cliente: str, razon: str) -> str:
     c_viol.fill = _fill(ROJO_CLARO if a["alertas_violencia"] > 0 else "D6E4D8")
     c_viol.border = _border()
     items_viol = [
-        ("P44 — Me ignoran o excluyen",           a["viol_prom"].get("P44", 0)),
-        ("P45 — Burlas, humillaciones",            a["viol_prom"].get("P45", 0)),
-        ("P46 — Responsabilidades sin autoridad",  a["viol_prom"].get("P46", 0)),
+        ("P34 — Críticas constantes",              a["viol_prom"].get("P34", 0)),
+        ("P35 — Burlas, humillaciones",            a["viol_prom"].get("P35", 0)),
+        ("P36 — Me excluyen",                      a["viol_prom"].get("P36", 0)),
+        ("P37 — Me hacen parecer mal trabajador",  a["viol_prom"].get("P37", 0)),
+        ("P38 — Ignoran mis éxitos",               a["viol_prom"].get("P38", 0)),
+        ("P39 — Bloquean ascensos",                a["viol_prom"].get("P39", 0)),
+        ("P40 — Presencié violencia",              a["viol_prom"].get("P40", 0)),
     ]
     for ri, (etiq, prom) in enumerate(items_viol, start=30):
         for ci, val in enumerate([etiq, f"{prom:.2f}/4.0",
@@ -718,6 +738,8 @@ def generar_excel_g2(excel_path: str, cliente: str, razon: str) -> str:
 # ══════════════════════════════════════════════════════════════════════════════
 def generar_word_g2(excel_path: str, cliente: str, razon: str,
                     logo_rf: str = None, logo_cliente: str = None) -> str:
+    logo_rf      = _resolve_logo(logo_rf)      if logo_rf      else ""
+    logo_cliente = _resolve_logo(logo_cliente) if logo_cliente else ""
     if not os.path.exists(excel_path):
         return None
     df = pd.read_excel(excel_path)

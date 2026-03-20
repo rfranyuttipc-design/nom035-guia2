@@ -46,12 +46,12 @@ if not st.session_state.app_loaded_g2:
 CLIENTES = {
     "FRUCO": {
         "razon": "FRUTAS CONCENTRADAS, S.A.P.I. DE C.V.",
-        "logo":  "assets/logos/fruco.png",
+        "logo":  _asset("assets/logos/fruco.png"),
         "opciones": ["FRUTAS CONCENTRADAS, S.A.P.I. DE C.V."],
     },
     "QUALTIA": {
         "razon": "QUALTIA ALIMENTOS Y OPERACIONES, S. DE R.L. DE C.V.",
-        "logo":  "assets/logos/qualtia.png",
+        "logo":  _asset("assets/logos/qualtia.png"),
         "opciones": [
             "QUALTIA ALIMENTOS Y OPERACIONES, S. DE R.L. DE C.V.",
             "QUALTIA ALIMENTOS OPERACIONES, S. DE R.L. DE C.V. (CEDIS Y SERVICIOS AUXILIARES)",
@@ -59,11 +59,14 @@ CLIENTES = {
     },
     "DIABLOS": {
         "razon": "CENTRO DEPORTIVO ALFREDO HARP HELÚ, S.A. DE C.V.",
-        "logo":  "assets/logos/Diablos.png",
+        "logo":  _asset("assets/logos/Diablos.png"),
         "opciones": ["CENTRO DEPORTIVO ALFREDO HARP HELÚ, S.A. DE C.V."],
     },
 }
-LOGO_RF = "assets/logos/rfranyutti.gif"
+# Resolución de rutas robusta para Streamlit Cloud
+_BASE_DIR = os.path.dirname(os.path.abspath(__file__)) if "__file__" in dir() else os.getcwd()
+def _asset(rel): return os.path.join(_BASE_DIR, rel)
+LOGO_RF = _asset("assets/logos/rfranyutti.gif")
 
 def excel_path(cliente_key: str, razon_social: str = "") -> str:
     if cliente_key == "QUALTIA" and "CEDIS" in razon_social.upper():
@@ -103,189 +106,204 @@ ESCALA = {"Siempre": 4, "Casi siempre": 3, "Algunas veces": 2,
 # Dominios: 1=Carga, 2=Control, 3=Jornada, 4=Interf, 5=Liderazgo, 6=Relaciones, 7=Violencia
 
 PREGUNTAS_G2 = [
-    # CATEGORÍA 1 — Condiciones en el ambiente de trabajo
-    {"id":1,  "cat":1, "dom":0, "cat_nombre":"Condiciones en el ambiente de trabajo",
-     "dom_nombre":"Condiciones del ambiente",
+    # CATEGORÍA 1 — Ambiente de trabajo / Condiciones en el ambiente
+    {"id":1,  "cat":1, "dom":0, "cat_nombre":"Ambiente de trabajo",
+     "dom_nombre":"Condiciones en el ambiente de trabajo",
      "texto":"Mi trabajo me exige hacer mucho esfuerzo físico."},
-    {"id":2,  "cat":1, "dom":0, "cat_nombre":"Condiciones en el ambiente de trabajo",
-     "dom_nombre":"Condiciones del ambiente",
+    {"id":2,  "cat":1, "dom":0, "cat_nombre":"Ambiente de trabajo",
+     "dom_nombre":"Condiciones en el ambiente de trabajo",
      "texto":"Me preocupa sufrir un accidente en mi trabajo."},
-    {"id":3,  "cat":1, "dom":0, "cat_nombre":"Condiciones en el ambiente de trabajo",
-     "dom_nombre":"Condiciones del ambiente",
-     "texto":"Considero que en mi trabajo se presentan riesgos que pueden afectar mi salud."},
-    {"id":4,  "cat":1, "dom":0, "cat_nombre":"Condiciones en el ambiente de trabajo",
-     "dom_nombre":"Condiciones del ambiente",
-     "texto":"En mi trabajo puedo tener poco o nada de movimiento."},
+    {"id":3,  "cat":1, "dom":0, "cat_nombre":"Ambiente de trabajo",
+     "dom_nombre":"Condiciones en el ambiente de trabajo",
+     "texto":"Considero que las actividades que realizo son peligrosas."},
 
-    # CATEGORÍA 2 — Factores propios de la actividad / DOMINIO 1: Carga de trabajo
-    {"id":5,  "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
+    # CATEGORÍA 2 — Factores propios de la actividad / Carga de trabajo
+    {"id":4,  "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Carga de trabajo",
      "texto":"Por la cantidad de trabajo que tengo debo quedarme tiempo adicional a mi turno."},
+    {"id":5,  "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
+     "dom_nombre":"Carga de trabajo",
+     "texto":"Por la cantidad de trabajo que tengo debo trabajar sin parar."},
     {"id":6,  "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Carga de trabajo",
-     "texto":"Por la cantidad de trabajo que tengo debo llevarme trabajo a casa."},
+     "texto":"Considero que es necesario mantener un ritmo de trabajo acelerado."},
     {"id":7,  "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Carga de trabajo",
-     "texto":"Debo atender varias actividades al mismo tiempo."},
+     "texto":"Mi trabajo exige que esté muy concentrado."},
     {"id":8,  "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Carga de trabajo",
-     "texto":"En mi trabajo debo hacer esfuerzo mental importante para recordar muchas cosas."},
+     "texto":"Mi trabajo requiere que memorice mucha información."},
     {"id":9,  "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Carga de trabajo",
-     "texto":"En mi trabajo me exigen concentrarme demasiado."},
+     "texto":"Mi trabajo exige que atienda varios asuntos al mismo tiempo."},
     {"id":10, "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Carga de trabajo",
-     "texto":"Mi trabajo exige un nivel de atención muy elevado."},
+     "texto":"En mi trabajo soy responsable de cosas de mucho valor."},
     {"id":11, "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Carga de trabajo",
-     "texto":"En mi trabajo soy responsable de cosas de mucho valor."},
+     "texto":"Respondo ante mi jefe por los resultados de toda mi área de trabajo."},
     {"id":12, "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Carga de trabajo",
-     "texto":"En mi trabajo soy responsable de la seguridad de otros."},
+     "texto":"En mi trabajo me dan órdenes contradictorias."},
     {"id":13, "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Carga de trabajo",
-     "texto":"En mi trabajo me dan órdenes contradictorias."},
-    {"id":14, "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
-     "dom_nombre":"Carga de trabajo",
-     "texto":"En mi trabajo hay situaciones que me hacen tener reacciones emocionales que afectan mi desempeño (enfado, llanto, etc.)."},
-    {"id":15, "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
-     "dom_nombre":"Carga de trabajo",
-     "texto":"Mi trabajo permite que desarrolle nuevas habilidades."},
-    {"id":16, "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
-     "dom_nombre":"Carga de trabajo",
-     "texto":"En mi trabajo puedo aplicar mis habilidades y mis conocimientos."},
+     "texto":"Considero que en mi trabajo me piden hacer cosas innecesarias."},
 
-    # DOMINIO 2: Falta de control sobre el trabajo
-    {"id":17, "cat":2, "dom":2, "cat_nombre":"Factores propios de la actividad",
-     "dom_nombre":"Falta de control sobre el trabajo",
-     "texto":"Me informan con claridad cuáles son mis funciones."},
+    # CATEGORÍA 3 — Organización del tiempo de trabajo / Jornada
+    {"id":14, "cat":3, "dom":3, "cat_nombre":"Organización del tiempo de trabajo",
+     "dom_nombre":"Jornada de trabajo",
+     "texto":"Trabajo horas extras más de tres veces a la semana."},
+    {"id":15, "cat":3, "dom":3, "cat_nombre":"Organización del tiempo de trabajo",
+     "dom_nombre":"Jornada de trabajo",
+     "texto":"Mi trabajo me exige laborar en días de descanso, festivos o fines de semana."},
+
+    # Interferencia trabajo-familia
+    {"id":16, "cat":3, "dom":4, "cat_nombre":"Organización del tiempo de trabajo",
+     "dom_nombre":"Interferencia en la relación trabajo-familia",
+     "texto":"Considero que el tiempo en el trabajo es mucho y perjudica mis actividades familiares o personales."},
+    {"id":17, "cat":3, "dom":4, "cat_nombre":"Organización del tiempo de trabajo",
+     "dom_nombre":"Interferencia en la relación trabajo-familia",
+     "texto":"Pienso en las actividades familiares o personales cuando estoy en mi trabajo."},
+
+    # CATEGORÍA 2 — Falta de control sobre el trabajo (ítems 18-27, INVERSOS)
     {"id":18, "cat":2, "dom":2, "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Falta de control sobre el trabajo",
-     "texto":"Me explican claramente los resultados que debo obtener en mi trabajo."},
+     "texto":"Mi trabajo permite que desarrolle nuevas habilidades."},
     {"id":19, "cat":2, "dom":2, "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Falta de control sobre el trabajo",
-     "texto":"Me informan con quién puedo resolver los problemas o asuntos de trabajo."},
+     "texto":"En mi trabajo puedo aspirar a un mejor puesto."},
     {"id":20, "cat":2, "dom":2, "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Falta de control sobre el trabajo",
-     "texto":"Me permiten organizar mi trabajo como mejor lo considero."},
+     "texto":"Durante mi jornada de trabajo puedo tomar pausas cuando las necesito."},
     {"id":21, "cat":2, "dom":2, "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Falta de control sobre el trabajo",
-     "texto":"Me permiten tomar decisiones en mi trabajo."},
+     "texto":"Puedo decidir la velocidad a la que realizo mis actividades en mi trabajo."},
     {"id":22, "cat":2, "dom":2, "cat_nombre":"Factores propios de la actividad",
      "dom_nombre":"Falta de control sobre el trabajo",
-     "texto":"Me proporcionan capacitación necesaria para hacer mi trabajo."},
+     "texto":"Puedo cambiar el orden de las actividades que realizo en mi trabajo."},
+    {"id":23, "cat":4, "dom":5, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+     "dom_nombre":"Liderazgo",
+     "texto":"Me informan con claridad cuáles son mis funciones."},
+    {"id":24, "cat":4, "dom":5, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+     "dom_nombre":"Liderazgo",
+     "texto":"Me explican claramente los resultados que debo obtener en mi trabajo."},
+    {"id":25, "cat":4, "dom":5, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+     "dom_nombre":"Liderazgo",
+     "texto":"Me informan con quién puedo resolver problemas o asuntos de trabajo."},
+    {"id":26, "cat":2, "dom":2, "cat_nombre":"Factores propios de la actividad",
+     "dom_nombre":"Falta de control sobre el trabajo",
+     "texto":"Me permiten asistir a capacitaciones relacionadas con mi trabajo."},
+    {"id":27, "cat":2, "dom":2, "cat_nombre":"Factores propios de la actividad",
+     "dom_nombre":"Falta de control sobre el trabajo",
+     "texto":"Recibo capacitación útil para hacer mi trabajo."},
 
-    # CATEGORÍA 3 — Organización del tiempo de trabajo / DOMINIO 3: Jornada
-    {"id":23, "cat":3, "dom":3, "cat_nombre":"Organización del tiempo de trabajo",
-     "dom_nombre":"Jornada de trabajo",
-     "texto":"Mi jornada de trabajo me permite atender mis necesidades personales."},
-    {"id":24, "cat":3, "dom":3, "cat_nombre":"Organización del tiempo de trabajo",
-     "dom_nombre":"Jornada de trabajo",
-     "texto":"Puedo tomar pausas cuando las necesito en mi trabajo."},
-    {"id":25, "cat":3, "dom":3, "cat_nombre":"Organización del tiempo de trabajo",
-     "dom_nombre":"Jornada de trabajo",
-     "texto":"Mi trabajo me permite tener vacaciones."},
-
-    # DOMINIO 4: Interferencia en la relación trabajo-familia
-    {"id":26, "cat":3, "dom":4, "cat_nombre":"Organización del tiempo de trabajo",
-     "dom_nombre":"Interferencia en la relación trabajo-familia",
-     "texto":"Puedo atender las necesidades de mis familiares o personales cuando lo necesito."},
-    {"id":27, "cat":3, "dom":4, "cat_nombre":"Organización del tiempo de trabajo",
-     "dom_nombre":"Interferencia en la relación trabajo-familia",
-     "texto":"Puedo separar fácilmente los problemas familiares de los laborales."},
-    {"id":28, "cat":3, "dom":4, "cat_nombre":"Organización del tiempo de trabajo",
-     "dom_nombre":"Interferencia en la relación trabajo-familia",
-     "texto":"Cuando estoy en casa sigo pensando en el trabajo."},
-    {"id":29, "cat":3, "dom":4, "cat_nombre":"Organización del tiempo de trabajo",
-     "dom_nombre":"Interferencia en la relación trabajo-familia",
-     "texto":"Hay momentos en que necesitaría estar en el trabajo y en casa al mismo tiempo."},
-    {"id":30, "cat":3, "dom":4, "cat_nombre":"Organización del tiempo de trabajo",
-     "dom_nombre":"Interferencia en la relación trabajo-familia",
-     "texto":"Mi trabajo me quita tiempo que quisiera dedicar a mi familia o a mis actividades personales."},
-
-    # CATEGORÍA 4 — Liderazgo y relaciones / DOMINIO 5: Liderazgo
-    {"id":31, "cat":4, "dom":5, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+    # CATEGORÍA 4 — Liderazgo y relaciones / Relaciones en el trabajo (INVERSOS)
+    {"id":28, "cat":4, "dom":5, "cat_nombre":"Liderazgo y relaciones en el trabajo",
      "dom_nombre":"Liderazgo",
      "texto":"Mi jefe tiene en cuenta mis puntos de vista y opiniones."},
-    {"id":32, "cat":4, "dom":5, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+    {"id":29, "cat":4, "dom":5, "cat_nombre":"Liderazgo y relaciones en el trabajo",
      "dom_nombre":"Liderazgo",
-     "texto":"Mi jefe me comunica a tiempo la información que necesito para hacer mi trabajo."},
-    {"id":33, "cat":4, "dom":5, "cat_nombre":"Liderazgo y relaciones en el trabajo",
-     "dom_nombre":"Liderazgo",
-     "texto":"Mi jefe me permite participar en la toma de decisiones del trabajo."},
-    {"id":34, "cat":4, "dom":5, "cat_nombre":"Liderazgo y relaciones en el trabajo",
-     "dom_nombre":"Liderazgo",
-     "texto":"Mi jefe distribuye el trabajo de forma equitativa entre sus subordinados."},
-    {"id":35, "cat":4, "dom":5, "cat_nombre":"Liderazgo y relaciones en el trabajo",
-     "dom_nombre":"Liderazgo",
-     "texto":"Mi jefe me orienta y da retroalimentación sobre mi trabajo."},
-    {"id":36, "cat":4, "dom":5, "cat_nombre":"Liderazgo y relaciones en el trabajo",
-     "dom_nombre":"Liderazgo",
-     "texto":"Mi jefe me ayuda a solucionar los problemas que se presentan en el trabajo."},
-    {"id":37, "cat":4, "dom":5, "cat_nombre":"Liderazgo y relaciones en el trabajo",
-     "dom_nombre":"Liderazgo",
-     "texto":"En mi empresa, el jefe nos da el reconocimiento que merecemos."},
-    {"id":38, "cat":4, "dom":5, "cat_nombre":"Liderazgo y relaciones en el trabajo",
-     "dom_nombre":"Liderazgo",
-     "texto":"En la empresa donde trabajo existe justicia en la forma de resolver los conflictos."},
-    {"id":39, "cat":4, "dom":5, "cat_nombre":"Liderazgo y relaciones en el trabajo",
-     "dom_nombre":"Liderazgo",
-     "texto":"En mi trabajo existe comunicación eficiente entre compañeros."},
+     "texto":"Mi jefe ayuda a solucionar los problemas que se presentan en el trabajo."},
+    {"id":30, "cat":4, "dom":6, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+     "dom_nombre":"Relaciones en el trabajo",
+     "texto":"Puedo confiar en mis compañeros de trabajo."},
+    {"id":31, "cat":4, "dom":6, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+     "dom_nombre":"Relaciones en el trabajo",
+     "texto":"Cuando tenemos que realizar trabajo de equipo los compañeros colaboran."},
+    {"id":32, "cat":4, "dom":6, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+     "dom_nombre":"Relaciones en el trabajo",
+     "texto":"Mis compañeros de trabajo me ayudan cuando tengo dificultades."},
+    {"id":33, "cat":4, "dom":7, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+     "dom_nombre":"Violencia laboral",
+     "texto":"En mi trabajo puedo expresarme libremente sin interrupciones."},
 
-    # DOMINIO 6: Relaciones en el trabajo
-    {"id":40, "cat":4, "dom":6, "cat_nombre":"Liderazgo y relaciones en el trabajo",
-     "dom_nombre":"Relaciones en el trabajo",
-     "texto":"En mi trabajo hay apoyo entre compañeros cuando alguien está en problemas."},
-    {"id":41, "cat":4, "dom":6, "cat_nombre":"Liderazgo y relaciones en el trabajo",
-     "dom_nombre":"Relaciones en el trabajo",
-     "texto":"En mi trabajo los compañeros tienen en cuenta mis puntos de vista y opiniones."},
-    {"id":42, "cat":4, "dom":6, "cat_nombre":"Liderazgo y relaciones en el trabajo",
-     "dom_nombre":"Relaciones en el trabajo",
-     "texto":"En mi trabajo puedo confiar en mis compañeros."},
-    {"id":43, "cat":4, "dom":6, "cat_nombre":"Liderazgo y relaciones en el trabajo",
-     "dom_nombre":"Relaciones en el trabajo",
-     "texto":"Cuando tengo que hacer tareas difíciles mis compañeros me apoyan."},
+    # Violencia laboral (DIRECTOS)
+    {"id":34, "cat":4, "dom":7, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+     "dom_nombre":"Violencia laboral",
+     "texto":"Recibo críticas constantes a mi persona y/o trabajo."},
+    {"id":35, "cat":4, "dom":7, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+     "dom_nombre":"Violencia laboral",
+     "texto":"Recibo burlas, calumnias, difamaciones, humillaciones o ridiculizaciones."},
+    {"id":36, "cat":4, "dom":7, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+     "dom_nombre":"Violencia laboral",
+     "texto":"Se ignora mi presencia o se me excluye de las reuniones de trabajo y en la toma de decisiones."},
+    {"id":37, "cat":4, "dom":7, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+     "dom_nombre":"Violencia laboral",
+     "texto":"Se manipulan las situaciones de trabajo para hacerme parecer un mal trabajador."},
+    {"id":38, "cat":4, "dom":7, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+     "dom_nombre":"Violencia laboral",
+     "texto":"Se ignoran mis éxitos laborales y se atribuyen a otros trabajadores."},
+    {"id":39, "cat":4, "dom":7, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+     "dom_nombre":"Violencia laboral",
+     "texto":"Me bloquean o impiden las oportunidades que tengo para obtener ascenso o mejora en mi trabajo."},
+    {"id":40, "cat":4, "dom":7, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+     "dom_nombre":"Violencia laboral",
+     "texto":"He presenciado actos de violencia en mi centro de trabajo."},
 
-    # DOMINIO 7: Violencia laboral (ítems 44-46) — MÁS DELICADOS
-    {"id":44, "cat":4, "dom":7, "cat_nombre":"Liderazgo y relaciones en el trabajo",
-     "dom_nombre":"Violencia laboral",
-     "texto":"En mi trabajo me ignoran o me excluyen."},
-    {"id":45, "cat":4, "dom":7, "cat_nombre":"Liderazgo y relaciones en el trabajo",
-     "dom_nombre":"Violencia laboral",
-     "texto":"En mi trabajo soy objeto de burlas, calumnias, falsedades, humillaciones o ridiculizaciones."},
-    {"id":46, "cat":4, "dom":7, "cat_nombre":"Liderazgo y relaciones en el trabajo",
-     "dom_nombre":"Violencia laboral",
-     "texto":"En mi trabajo me exigen responsabilidades que no corresponden a mis funciones o se me asignan tareas sin los recursos necesarios."},
+    # Atención a clientes (DIRECTOS — sección condicional)
+    {"id":41, "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
+     "dom_nombre":"Carga de trabajo",
+     "texto":"Atiendo clientes o usuarios muy enojados."},
+    {"id":42, "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
+     "dom_nombre":"Carga de trabajo",
+     "texto":"Mi trabajo me exige atender personas muy necesitadas de ayuda o enfermas."},
+    {"id":43, "cat":2, "dom":1, "cat_nombre":"Factores propios de la actividad",
+     "dom_nombre":"Carga de trabajo",
+     "texto":"Para hacer mi trabajo debo demostrar sentimientos distintos a los míos."},
+
+    # Supervisores — aplica solo a jefes (DIRECTOS)
+    {"id":44, "cat":4, "dom":6, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+     "dom_nombre":"Relaciones en el trabajo",
+     "texto":"Comunican tarde los asuntos de trabajo (los trabajadores que supervisa)."},
+    {"id":45, "cat":4, "dom":6, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+     "dom_nombre":"Relaciones en el trabajo",
+     "texto":"Dificultan el logro de los resultados del trabajo (los trabajadores que supervisa)."},
+    {"id":46, "cat":4, "dom":6, "cat_nombre":"Liderazgo y relaciones en el trabajo",
+     "dom_nombre":"Relaciones en el trabajo",
+     "texto":"Ignoran las sugerencias para mejorar su trabajo (los trabajadores que supervisa)."},
 ]
 
 # ── Ítems de calificación INVERTIDA (respuesta favorable = Siempre → menor riesgo)
 # Estos ítems se puntúan al revés: Siempre=0, Casi siempre=1... Nunca=4
-ITEMS_DIRECTOS = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,28,29,30,44,45,46}
-ITEMS_INVERSOS = {15,16,17,18,19,20,21,22,23,24,25,26,27,31,32,33,34,35,36,37,38,39,40,41,42,43}
+# Tabla 2 NOM-035: ítems con calificación inversa (Siempre=0 ... Nunca=4)
+ITEMS_INVERSOS = {18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33}
+# Todos los demás son directos (Siempre=4 ... Nunca=0)
+ITEMS_DIRECTOS = set(range(1,47)) - ITEMS_INVERSOS
 
 ESCALA_DIRECTA  = {"Siempre":4,"Casi siempre":3,"Algunas veces":2,"Casi nunca":1,"Nunca":0}
 ESCALA_INVERSA  = {"Siempre":0,"Casi siempre":1,"Algunas veces":2,"Casi nunca":3,"Nunca":4}
 
 # Tabla 5 NOM-035 — Puntos de corte Guía II (46 ítems, puntaje máx = 184)
+# Tabla 5 NOM-035 — Calificación final (Cfinal) — VALORES EXACTOS
 TABLA5 = [
-    (0,  20,  "NULO",     "#4B694E", "#D6E4D8"),
-    (21, 45,  "BAJO",     "#69A2D8", "#EBF3FB"),
-    (46, 70,  "MEDIO",    "#C8A600", "#FFF8DC"),
-    (71, 90,  "ALTO",     "#E07820", "#FDEBD0"),
-    (91, 999, "MUY ALTO", "#A20000", "#FDDEDE"),
+    (0,  19,  "NULO",     "#4B694E", "#D6E4D8"),   # Cfinal < 20
+    (20, 44,  "BAJO",     "#69A2D8", "#EBF3FB"),   # 20 ≤ Cfinal ≤ 44
+    (45, 69,  "MEDIO",    "#C8A600", "#FFF8DC"),   # 45 ≤ Cfinal ≤ 69
+    (70, 89,  "ALTO",     "#E07820", "#FDEBD0"),   # 70 ≤ Cfinal ≤ 89
+    (90, 999, "MUY ALTO", "#A20000", "#FDDEDE"),   # Cfinal ≥ 90
 ]
 
-# Tabla de puntos de corte por DOMINIO
+# Tabla 3 NOM-035 — Puntos de corte por dominio (Cdom) — VALORES EXACTOS NORMA
 TABLA_DOM = {
     # dom_id: (nulo_max, bajo_max, medio_max, alto_max)
-    0: (4,  8,  12, 16),    # Condiciones ambiente (4 ítems, max 16)
-    1: (8,  16, 24, 32),    # Carga de trabajo (12 ítems puntaje max 48)
-    2: (2,  4,  8,  10),    # Control (6 ítems max 24)
-    3: (2,  4,  6,  8),     # Jornada (3 ítems max 12)
-    4: (3,  6,  9,  12),    # Interferencia (5 ítems max 20)
-    5: (4,  8,  14, 22),    # Liderazgo (9 ítems max 36)
-    6: (2,  4,  6,  8),     # Relaciones (4 ítems max 16)
-    7: (0,  2,  4,  6),     # Violencia (3 ítems max 12) — umbral bajo
+    # Interpretación: NULO si Cdom < nulo_max+1, BAJO si < bajo_max+1, etc.
+    0: (2,  4,  6,  8),    # Condiciones ambiente (3 ítems)  Cdom<3,<5,<7,<9
+    1: (11, 15, 19, 23),   # Carga de trabajo (13 ítems*)    Cdom<12,<16,<20,<24
+    2: (4,  7,  10, 13),   # Falta de control (6 ítems)      Cdom<5,<8,<11,<14
+    3: (0,  1,  3,  5),    # Jornada de trabajo (2 ítems)    Cdom<1,<2,<4,<6
+    4: (0,  1,  3,  5),    # Interferencia trab-fam (2 ítems) Cdom<1,<2,<4,<6
+    5: (2,  4,  7,  10),   # Liderazgo (5 ítems)             Cdom<3,<5,<8,<11
+    6: (4,  7,  10, 13),   # Relaciones en el trabajo (6 ítems*) Cdom<5,<8,<11,<14
+    7: (6,  9,  12, 15),   # Violencia (8 ítems: 33-40)      Cdom<7,<10,<13,<16
+    # * Carga incluye 41,42,43 si aplica; Relaciones incluye 44,45,46 si aplica
+}
+
+# Tabla 3 NOM-035 — Puntos de corte por categoría (Ccat) — VALORES EXACTOS NORMA
+TABLA_CAT = {
+    1: (2,  4,  6,  8),    # Ambiente de trabajo        Ccat<3,<5,<7,<9
+    2: (9,  19, 29, 39),   # Factores propios actividad Ccat<10,<20,<30,<40
+    3: (3,  5,  8,  11),   # Organización tiempo        Ccat<4,<6,<9,<12
+    4: (9,  17, 27, 37),   # Liderazgo y relaciones     Ccat<10,<18,<28,<38
 }
 
 def nivel_riesgo(puntaje: int) -> dict:
@@ -299,6 +317,14 @@ def nivel_riesgo(puntaje: int) -> dict:
 
 def nivel_dominio(dom_id: int, puntaje: int) -> str:
     cortes = TABLA_DOM.get(dom_id, (4, 8, 12, 16))
+    if puntaje <= cortes[0]:   return "NULO"
+    if puntaje <= cortes[1]:   return "BAJO"
+    if puntaje <= cortes[2]:   return "MEDIO"
+    if puntaje <= cortes[3]:   return "ALTO"
+    return "MUY ALTO"
+
+def nivel_categoria(cat_id: int, puntaje: int) -> str:
+    cortes = TABLA_CAT.get(cat_id, (4, 8, 12, 16))
     if puntaje <= cortes[0]:   return "NULO"
     if puntaje <= cortes[1]:   return "BAJO"
     if puntaje <= cortes[2]:   return "MEDIO"
@@ -591,6 +617,8 @@ DEF = dict(
     tpuesto=SEL, exp=SEL,
     preg_idx=0,
     respuestas=[],
+    atiende_clientes=None,   # True/False — sección 41-43
+    es_jefe=None,            # True/False — sección 44-46
     err=False, res=None, modal=None,
     form_v=0,
 )
@@ -624,10 +652,12 @@ def borrar_formulario():
     S.form_v = S.get("form_v", 0) + 1
 
 def reset_cuestionario():
-    S.preg_idx   = 0
-    S.respuestas = []
-    S.err        = False
-    S.res        = None
+    S.preg_idx         = 0
+    S.respuestas       = []
+    S.atiende_clientes = None
+    S.es_jefe          = None
+    S.err              = False
+    S.res              = None
 
 def header(mostrar_folio=False):
     rf_src  = _img_b64(LOGO_RF)
@@ -1024,37 +1054,121 @@ elif S.pantalla == "aviso":
 elif S.pantalla == "preguntas":
     header(True)
 
-    total_pregs = len(PREGUNTAS_G2)
+    # Determinar qué preguntas aplican según respuestas condicionales
+    # Ítems 1-40: todos
+    # Ítems 41-43: solo si atiende_clientes = True
+    # Ítems 44-46: solo si es_jefe = True
+    # Se agregan al final después de la pregunta 40
+
+    PREG_BASE  = [p for p in PREGUNTAS_G2 if p["id"] <= 40]
+    PREG_CLIE  = [p for p in PREGUNTAS_G2 if p["id"] in [41,42,43]]
+    PREG_JEFE  = [p for p in PREGUNTAS_G2 if p["id"] in [44,45,46]]
+
+    # Construir lista activa según selecciones
+    if S.atiende_clientes is None or S.es_jefe is None:
+        preg_activas = PREG_BASE  # aún no se han respondido preguntas condicionales
+    else:
+        preg_activas = PREG_BASE[:]
+        if S.atiende_clientes: preg_activas += PREG_CLIE
+        if S.es_jefe:          preg_activas += PREG_JEFE
+
+    total_pregs = len(preg_activas)
     idx         = S.preg_idx
 
-    if idx >= total_pregs:
+    # ── Pantalla condicional: ¿atiende clientes? ──────────────────────────────
+    if idx == 40 and S.atiende_clientes is None:
+        st.progress(40/46)
+        st.markdown(f'<div class="prog-txt">Pregunta 40 de 46 completada</div>',
+                    unsafe_allow_html=True)
+        st.markdown("""
+        <div class="pq-card">
+          <div class="pq-sec">Sección: Atención a Clientes</div>
+          <div class="pq-txt">¿En mi trabajo debo brindar servicio a clientes o usuarios?</div>
+        </div>
+        """, unsafe_allow_html=True)
+        c1, c2 = st.columns(2)
+        with c1:
+            if st.button("✅  SÍ, atiendo clientes", use_container_width=True):
+                S.atiende_clientes = True; st.rerun()
+        with c2:
+            if st.button("❌  NO atiendo clientes", use_container_width=True):
+                S.atiende_clientes = False; st.rerun()
+        st.stop()
+
+    # ── Pantalla condicional: ¿es jefe? ──────────────────────────────────────
+    if S.atiende_clientes is not None and S.es_jefe is None:
+        # Calcular cuántas preguntas de cliente ya se respondieron
+        preg_hasta_ahora = PREG_BASE[:]
+        if S.atiende_clientes: preg_hasta_ahora += PREG_CLIE
+        if idx >= len(preg_hasta_ahora):
+            st.progress(len(preg_hasta_ahora)/46)
+            st.markdown("""
+            <div class="pq-card">
+              <div class="pq-sec">Sección: Supervisión</div>
+              <div class="pq-txt">¿Soy jefe de otros trabajadores?</div>
+            </div>
+            """, unsafe_allow_html=True)
+            c1, c2 = st.columns(2)
+            with c1:
+                if st.button("✅  SÍ, soy jefe", use_container_width=True):
+                    S.es_jefe = True; st.rerun()
+            with c2:
+                if st.button("❌  NO soy jefe", use_container_width=True):
+                    S.es_jefe = False
+                    # Completar con "Nunca" los ítems 44-46 ya que no aplican
+                    resultado = calcular_puntaje(S.respuestas + ["Nunca","Nunca","Nunca"])
+                    S.res = resultado
+                    guardar(dict(
+                        folio=S.folio, cliente=S.cliente_key, razon=S.razon,
+                        nombre=f"{S.ap1}; {S.ap2}; {S.nom}",
+                        sexo=S.sexo, edad=S.edad, ecivil=S.ecivil,
+                        estudios=S.estudios, estatus=S.estatus,
+                        puesto=S.puesto, area=S.area,
+                        contrat=S.contrat, personal=S.personal,
+                        jornada=S.jornada, rotacion=S.rotacion,
+                        tpuesto=S.tpuesto, exp=S.exp,
+                        respuestas=S.respuestas + ["Nunca","Nunca","Nunca"],
+                        resultado=resultado,
+                    ))
+                    S.pantalla = "fin"; st.rerun()
+            st.stop()
+
+    # ── Pregunta normal ───────────────────────────────────────────────────────
+    if idx >= len(preg_activas):
+        resultado = calcular_puntaje(S.respuestas)
+        S.res     = resultado
+        guardar(dict(
+            folio=S.folio, cliente=S.cliente_key, razon=S.razon,
+            nombre=f"{S.ap1}; {S.ap2}; {S.nom}",
+            sexo=S.sexo, edad=S.edad, ecivil=S.ecivil,
+            estudios=S.estudios, estatus=S.estatus,
+            puesto=S.puesto, area=S.area,
+            contrat=S.contrat, personal=S.personal,
+            jornada=S.jornada, rotacion=S.rotacion,
+            tpuesto=S.tpuesto, exp=S.exp,
+            respuestas=S.respuestas,
+            resultado=resultado,
+        ))
         S.pantalla = "fin"; st.rerun()
 
-    preg = PREGUNTAS_G2[idx]
-
+    preg = preg_activas[idx]
     st.markdown(
         f'<div class="prog-txt">{preg["cat_nombre"]} · '
-        f'Pregunta {idx + 1} de {total_pregs}</div>',
+        f'Pregunta {idx + 1} de {len(preg_activas)}</div>',
         unsafe_allow_html=True)
-    st.progress(idx / total_pregs)
+    st.progress(idx / max(len(preg_activas), 1))
 
     st.markdown(f"""
     <div class="pq-card">
-      <div class="pq-num">Pregunta {idx + 1} / {total_pregs}</div>
+      <div class="pq-num">Pregunta {idx + 1} / {len(preg_activas)}</div>
       <div class="pq-sec">{preg["cat_nombre"]}</div>
       <div class="pq-dom">Dominio: {preg["dom_nombre"]}</div>
       <div class="pq-txt">{preg["texto"]}</div>
     </div>
     """, unsafe_allow_html=True)
 
-    resp = st.radio(
-        "",
-        OPC_RESP,
-        index=None,
-        horizontal=False,
-        key=f"q_{idx}",
-        label_visibility="collapsed",
-    )
+    resp = st.radio("", OPC_RESP, index=None, horizontal=False,
+                    key=f"q_{idx}", label_visibility="collapsed")
 
     if S.err:
         st.markdown('<p class="err-r">⚠ SELECCIONA UNA RESPUESTA ANTES DE CONTINUAR</p>',
@@ -1069,24 +1183,6 @@ elif S.pantalla == "preguntas":
             S.err        = False
             S.respuestas = S.respuestas + [resp]
             S.preg_idx   = idx + 1
-
-            if S.preg_idx >= total_pregs:
-                # Calcular resultado
-                resultado = calcular_puntaje(S.respuestas)
-                S.res     = resultado
-                guardar(dict(
-                    folio=S.folio, cliente=S.cliente_key, razon=S.razon,
-                    nombre=f"{S.ap1}; {S.ap2}; {S.nom}",
-                    sexo=S.sexo, edad=S.edad, ecivil=S.ecivil,
-                    estudios=S.estudios, estatus=S.estatus,
-                    puesto=S.puesto, area=S.area,
-                    contrat=S.contrat, personal=S.personal,
-                    jornada=S.jornada, rotacion=S.rotacion,
-                    tpuesto=S.tpuesto, exp=S.exp,
-                    respuestas=S.respuestas,
-                    resultado=resultado,
-                ))
-                S.pantalla = "fin"
             st.rerun()
 
 # ══════════════════════════════════════════════════════════════════════════════
