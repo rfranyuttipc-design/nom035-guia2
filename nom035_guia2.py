@@ -399,10 +399,11 @@ def nivel_categoria(cat_id: int, puntaje: int) -> str:
 def calcular_puntaje(respuestas: list) -> dict:
     """
     Calcula puntaje total, por dominio y por categoría.
-    respuestas: lista de 46 respuestas en orden (índice 0 = ítem 1)
+    respuestas: lista de respuestas (puede ser < 46 si no aplican clientes/jefes).
+    Los ítems faltantes se tratan como "Nunca" (0 puntos directos, 0 puntos inversos).
     """
-    if len(respuestas) < 46:
-        return {}
+    # Completar a 46 con "Nunca" si faltan respuestas (secciones condicionales)
+    respuestas = list(respuestas) + ["Nunca"] * max(0, 46 - len(respuestas))
 
     puntaje_total = 0
     por_dominio   = {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0}
@@ -485,29 +486,29 @@ def guardar(data: dict) -> bool:
                 "Rotación Turnos": data["rotacion"],
                 "Tiempo Puesto": data["tpuesto"],
                 "Experiencia":   data["exp"],
-                "Puntaje Total": res["puntaje_total"],
-                "Nivel Riesgo":  res["nivel"],
-                "Cat1 Ambiente": res["por_categoria"].get(1, 0),
-                "Cat2 Actividad":res["por_categoria"].get(2, 0),
-                "Cat3 Tiempo":   res["por_categoria"].get(3, 0),
-                "Cat4 Liderazgo":res["por_categoria"].get(4, 0),
-                "Dom0 Ambiente": res["por_dominio"].get(0, 0),
-                "Dom1 Carga":    res["por_dominio"].get(1, 0),
-                "Dom2 Control":  res["por_dominio"].get(2, 0),
-                "Dom3 Jornada":  res["por_dominio"].get(3, 0),
-                "Dom4 Interferencia": res["por_dominio"].get(4, 0),
-                "Dom5 Liderazgo":res["por_dominio"].get(5, 0),
-                "Dom6 Relaciones":res["por_dominio"].get(6, 0),
-                "Dom7 Violencia":res["por_dominio"].get(7, 0),
-                "Nivel Dom0":    res["niveles_dom"].get(0, ""),
-                "Nivel Dom1":    res["niveles_dom"].get(1, ""),
-                "Nivel Dom2":    res["niveles_dom"].get(2, ""),
-                "Nivel Dom3":    res["niveles_dom"].get(3, ""),
-                "Nivel Dom4":    res["niveles_dom"].get(4, ""),
-                "Nivel Dom5":    res["niveles_dom"].get(5, ""),
-                "Nivel Dom6":    res["niveles_dom"].get(6, ""),
-                "Nivel Dom7":    res["niveles_dom"].get(7, ""),
-                "Alerta Violencia": "SÍ — URGENTE" if res["alerta_violencia"] else "No",
+                "Puntaje Total": res.get("puntaje_total", 0),
+                "Nivel Riesgo":  res.get("nivel", ""),
+                "Cat1 Ambiente": res.get("por_categoria", {}).get(1, 0),
+                "Cat2 Actividad":res.get("por_categoria", {}).get(2, 0),
+                "Cat3 Tiempo":   res.get("por_categoria", {}).get(3, 0),
+                "Cat4 Liderazgo":res.get("por_categoria", {}).get(4, 0),
+                "Dom0 Ambiente": res.get("por_dominio", {}).get(0, 0),
+                "Dom1 Carga":    res.get("por_dominio", {}).get(1, 0),
+                "Dom2 Control":  res.get("por_dominio", {}).get(2, 0),
+                "Dom3 Jornada":  res.get("por_dominio", {}).get(3, 0),
+                "Dom4 Interferencia": res.get("por_dominio", {}).get(4, 0),
+                "Dom5 Liderazgo":res.get("por_dominio", {}).get(5, 0),
+                "Dom6 Relaciones":res.get("por_dominio", {}).get(6, 0),
+                "Dom7 Violencia":res.get("por_dominio", {}).get(7, 0),
+                "Nivel Dom0":    res.get("niveles_dom", {}).get(0, ""),
+                "Nivel Dom1":    res.get("niveles_dom", {}).get(1, ""),
+                "Nivel Dom2":    res.get("niveles_dom", {}).get(2, ""),
+                "Nivel Dom3":    res.get("niveles_dom", {}).get(3, ""),
+                "Nivel Dom4":    res.get("niveles_dom", {}).get(4, ""),
+                "Nivel Dom5":    res.get("niveles_dom", {}).get(5, ""),
+                "Nivel Dom6":    res.get("niveles_dom", {}).get(6, ""),
+                "Nivel Dom7":    res.get("niveles_dom", {}).get(7, ""),
+                "Alerta Violencia": "SÍ — URGENTE" if res.get("alerta_violencia") else "No",
             }
             for i, resp in enumerate(data.get("respuestas", []), 1):
                 fila[f"P{i:02d}"] = resp
@@ -1306,7 +1307,7 @@ elif S.pantalla == "fin":
         """, unsafe_allow_html=True)
     else:
         # Solo el operativo ve el resultado
-        if S.res:
+        if S.res and S.res.get("puntaje_total") is not None:
             r   = S.res
             col = r.get("color", "#4b694e")
             bg  = r.get("bg",    "#D6E4D8")
@@ -1317,9 +1318,9 @@ elif S.pantalla == "fin":
                     <div style="font-size:.75rem;opacity:.8;text-transform:uppercase;
                                 letter-spacing:.1em;">Resultado · Guía II · NOM-035</div>
                     <div style="font-size:1.4rem;font-weight:700;margin-top:.4rem;">
-                        {r['nivel']}</div>
+                        {r.get('nivel','')}</div>
                     <div style="font-size:.9rem;opacity:.85;margin-top:.3rem;">
-                        Puntaje total: {r['puntaje_total']} puntos</div>
+                        Puntaje total: {r.get('puntaje_total',0)} puntos</div>
                 </div>
                 """, unsafe_allow_html=True)
                 if r.get("alerta_violencia"):
