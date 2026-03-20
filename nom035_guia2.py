@@ -10,7 +10,7 @@ GUÍA II       —  Identificación y Análisis de los Factores de
 
 import streamlit as st
 import pandas as pd
-import os, re, time, sys, io, textwrap, sqlite3, threading
+import os, re, time, sys, io, textwrap, threading
 from datetime import datetime
 
 # ── Modo empleado: detectar ?cliente=XXXX en la URL ───────────────────────────
@@ -526,35 +526,43 @@ def guardar(data: dict) -> bool:
 # ── Folio con SQLite AUTOINCREMENT ────────────────────────────────────────────
 _folio_lock = threading.Lock()
 
-def _db_path(cliente_key: str) -> str:
-    os.makedirs("data", exist_ok=True)
-    return f"data/g2_folios_{cliente_key.upper()}.db"
-
-def _init_db(db_path: str):
-    with sqlite3.connect(db_path, timeout=30) as con:
-        con.execute("""CREATE TABLE IF NOT EXISTS folios (
-            id    INTEGER PRIMARY KEY AUTOINCREMENT,
-            razon TEXT NOT NULL,
-            ts    TEXT NOT NULL
-        )""")
-        con.commit()
-
 def folio_nuevo(cliente_key: str, razon_social: str) -> str:
-    db        = _db_path(cliente_key)
-    _init_db(db)
+    """Folio 1, 2, 3... basado en registros del Excel.
+    No usa SQLite — funciona correctamente en Streamlit Cloud
+    incluso después de reinicios del servidor.
+    """
+    path      = excel_path(cliente_key, razon_social)
     razon_key = razon_social.strip().upper()
     with _folio_lock:
-        with sqlite3.connect(db, timeout=30, check_same_thread=False) as con:
-            cur = con.execute(
-                "INSERT INTO folios (razon, ts) VALUES (?, ?)",
-                (razon_key, datetime.now().isoformat())
-            )
-            con.commit()
-            n = con.execute(
-                "SELECT COUNT(*) FROM folios WHERE razon=? AND id<=?",
-                (razon_key, cur.lastrowid)
-            ).fetchone()[0]
-    return str(n).zfill(3)
+        init_excel(path)
+        try:
+            df = pd.read_excel(path)
+            if df.empty or "Razón Social" not in df.columns:
+                n = 1
+            else:
+                mask = df["Razón Social"].astype(str).str.strip().str.upper() == razon_key
+                n    = int(mask.sum()) + 1
+        except Exception:
+            n = 1
+    return str(n)
+
+
+def folio_nuevo(cliente_key: str, razon_social: str) -> str:
+    """Folio 1, 2, 3... basado en registros del Excel."""
+    path      = excel_path(cliente_key, razon_social)
+    razon_key = razon_social.strip().upper()
+    with _folio_lock:
+        init_excel(path)
+        try:
+            df = pd.read_excel(path)
+            if df.empty or "Razón Social" not in df.columns:
+                n = 1
+            else:
+                mask = df["Razón Social"].astype(str).str.strip().str.upper() == razon_key
+                n    = int(mask.sum()) + 1
+        except Exception:
+            n = 1
+    return str(n)
 
 def idx_de(lst, val):
     return lst.index(val) if val in lst else 0
@@ -669,6 +677,20 @@ hr.div{border:none;border-top:1.5px solid var(--br);margin:.8rem 0;}
 _cliente_def  = _CLIENTE_URL if (_MODO_EMPLEADO and _CLIENTE_URL in CLIENTES) else "FRUCO"
 _pantalla_def = "bienvenida" if _MODO_EMPLEADO else "panel"
 
+# ── Modo empleado: resetear sesión si viene desde link ?cliente= ──────────────
+# Usamos una clave de control para saber si ya se inicializó esta sesión
+# con el cliente correcto. Si no, forzamos pantalla=bienvenida.
+if _MODO_EMPLEADO:
+    _session_cliente = st.session_state.get("_session_cliente_key", "")
+    if _session_cliente != _CLIENTE_URL:
+        # Nueva sesión de empleado o cliente diferente — resetear todo
+        for _k in list(st.session_state.keys()):
+            del st.session_state[_k]
+        st.session_state["_session_cliente_key"] = _CLIENTE_URL
+        st.session_state["pantalla"]    = "bienvenida"
+        st.session_state["cliente_key"] = _cliente_def
+        st.session_state["razon"]       = CLIENTES[_cliente_def]["opciones"][0]
+
 DEF = dict(
     pantalla=_pantalla_def, cliente_key=_cliente_def,
     razon=CLIENTES[_cliente_def]["opciones"][0],
@@ -693,10 +715,9 @@ for k, v in DEF.items():
         st.session_state[k] = v
 S = st.session_state
 
+# Seguridad adicional: si por algún motivo pantalla=panel en modo empleado, corregir
 if _MODO_EMPLEADO and S.get("pantalla") == "panel":
-    S["pantalla"]    = "bienvenida"
-    S["cliente_key"] = _cliente_def
-    S["razon"]       = CLIENTES[_cliente_def]["opciones"][0]
+    S["pantalla"] = "bienvenida"
 
 TODAS_KEYS_FORM = [
     "d_ap1","d_ap2","d_nom",
@@ -1126,25 +1147,21 @@ elif S.pantalla == "preguntas":
     # Ítems 44-46: solo si es_jefe = True
     # Se agregan al final después de la pregunta 40
 
-    PREG_BASE  = [p for p in PREGUNTAS_G2 if p["id"] <= 40]
-    PREG_CLIE  = [p for p in PREGUNTAS_G2 if p["id"] in [41,42,43]]
-    PREG_JEFE  = [p for p in PREGUNTAS_G2 if p["id"] in [44,45,46]]
+    PREG_BASE = [p for p in PREGUNTAS_G2 if p["id"] <= 40]
+    PREG_CLIE = [p for p in PREGUNTAS_G2 if p["id"] in [41,42,43]]
+    PREG_JEFE = [p for p in PREGUNTAS_G2 if p["id"] in [44,45,46]]
 
-    # Construir lista activa según selecciones
-    if S.atiende_clientes is None or S.es_jefe is None:
-        preg_activas = PREG_BASE  # aún no se han respondido preguntas condicionales
-    else:
-        preg_activas = PREG_BASE[:]
-        if S.atiende_clientes: preg_activas += PREG_CLIE
-        if S.es_jefe:          preg_activas += PREG_JEFE
+    idx = S.preg_idx
 
-    total_pregs = len(preg_activas)
-    idx         = S.preg_idx
+    # ── Construir lista activa con lo que se sabe hasta ahora ─────────────────
+    preg_activas = PREG_BASE[:]
+    if S.atiende_clientes:  preg_activas += PREG_CLIE
+    if S.es_jefe:           preg_activas += PREG_JEFE
 
-    # ── Pantalla condicional: ¿atiende clientes? ──────────────────────────────
+    # ── Pantalla condicional: ¿atiende clientes? (después de pregunta 40) ─────
     if idx == 40 and S.atiende_clientes is None:
         st.progress(40/46)
-        st.markdown(f'<div class="prog-txt">Pregunta 40 de 46 completada</div>',
+        st.markdown('<div class="prog-txt">Pregunta 40 de 46 completada</div>',
                     unsafe_allow_html=True)
         st.markdown("""
         <div class="pq-card">
@@ -1161,27 +1178,29 @@ elif S.pantalla == "preguntas":
                 S.atiende_clientes = False; st.rerun()
         st.stop()
 
-    # ── Pantalla condicional: ¿es jefe? ──────────────────────────────────────
+    # ── Pantalla condicional: ¿es jefe? ───────────────────────────────────────
+    # Aparece cuando ya se definió atiende_clientes y se terminaron esas preguntas
     if S.atiende_clientes is not None and S.es_jefe is None:
-        # Calcular cuántas preguntas de cliente ya se respondieron
-        preg_hasta_ahora = PREG_BASE[:]
-        if S.atiende_clientes: preg_hasta_ahora += PREG_CLIE
-        if idx >= len(preg_hasta_ahora):
-            st.progress(len(preg_hasta_ahora)/46)
+        preg_hasta_jefe = PREG_BASE[:]
+        if S.atiende_clientes: preg_hasta_jefe += PREG_CLIE
+        if idx >= len(preg_hasta_jefe):
+            st.progress(len(preg_hasta_jefe) / 46)
             st.markdown("""
             <div class="pq-card">
-              <div class="pq-sec">Sección: Supervisión</div>
+              <div class="pq-sec">Sección: Supervisión de trabajadores</div>
               <div class="pq-txt">¿Soy jefe de otros trabajadores?</div>
             </div>
             """, unsafe_allow_html=True)
             c1, c2 = st.columns(2)
             with c1:
                 if st.button("✅  SÍ, soy jefe", use_container_width=True):
-                    S.es_jefe = True; st.rerun()
+                    # Continúa con preguntas 44-46
+                    S.es_jefe = True
+                    st.rerun()
             with c2:
                 if st.button("❌  NO soy jefe", use_container_width=True):
+                    # Termina sin preguntas 44-46
                     S.es_jefe = False
-                    # Completar con "Nunca" los ítems 44-46 ya que no aplican
                     resultado = calcular_puntaje(S.respuestas + ["Nunca","Nunca","Nunca"])
                     S.res = resultado
                     guardar(dict(
@@ -1199,8 +1218,8 @@ elif S.pantalla == "preguntas":
                     S.pantalla = "fin"; st.rerun()
             st.stop()
 
-    # ── Pregunta normal ───────────────────────────────────────────────────────
-    if idx >= len(preg_activas):
+    # ── Fin del cuestionario ──────────────────────────────────────────────────
+    if idx >= len(preg_activas) and S.atiende_clientes is not None and S.es_jefe is not None:
         resultado = calcular_puntaje(S.respuestas)
         S.res     = resultado
         guardar(dict(
